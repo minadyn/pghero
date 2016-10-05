@@ -170,8 +170,6 @@ Query stats
 
 ```ruby
 PgHero.query_stats_enabled?
-PgHero.enable_query_stats
-PgHero.disable_query_stats
 PgHero.reset_query_stats
 PgHero.query_stats
 PgHero.slow_queries

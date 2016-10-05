@@ -32,8 +32,7 @@ module PgHero
       @duplicate_indexes = @database.duplicate_indexes if params[:duplicate_indexes]
       @good_cache_rate = @table_hit_rate >= @database.cache_hit_rate_threshold.to_f / 100 && @index_hit_rate >= @database.cache_hit_rate_threshold.to_f / 100
       unless @query_stats_enabled
-        @query_stats_available = @database.query_stats_available?
-        @query_stats_extension_enabled = @database.query_stats_extension_enabled? if @query_stats_available
+        @query_stats_extension_enabled = @database.query_stats_extension_enabled?
       end
       @total_connections = @database.total_connections
       @good_total_connections = @total_connections < @database.total_connections_threshold

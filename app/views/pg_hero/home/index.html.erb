@@ -317,15 +317,16 @@ add_index <%= index[:table].to_sym.inspect %>, [<%= index[:columns].map(&:to_sym
   <div class="content">
     <h1>Query Stats</h1>
 
-    <% if @query_stats_available && !@query_stats_extension_enabled %>
+    <% if !@query_stats_extension_enabled %>
       <p>
-        Query stats are available but not enabled.
-        <%= button_to "Enable", enable_query_stats_path, class: "btn btn-info" %>
+        Query stats are not enabled.
       </p>
-    <% else %>
+      <p>Read this: https://www.postgresql.org/docs/9.0/static/contrib.html</p>
+      <p>Once you have the additional modules installed on your system,</p>
       <p>Make them available by adding the following lines to <code>postgresql.conf</code>:</p>
       <pre>shared_preload_libraries = 'pg_stat_statements'
 pg_stat_statements.track = all</pre>
+      <p>Run psql -f $path_to_contrib_modules/pg_stat_statements.sql</p>
       <p>Restart the server for the changes to take effect.</p>
     <% end %>
   </div>

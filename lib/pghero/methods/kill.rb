@@ -13,12 +13,12 @@ module PgHero
       def kill_all
         select_all <<-SQL
           SELECT
-            pg_terminate_backend(pid)
+            pg_terminate_backend(procpid)
           FROM
             pg_stat_activity
           WHERE
-            pid <> pg_backend_pid()
-            AND query <> '<insufficient privilege>'
+            procpid <> pg_backend_pid()
+            AND current_query <> '<insufficient privilege>'
             AND datname = current_database()
         SQL
         true

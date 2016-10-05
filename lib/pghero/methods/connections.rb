@@ -2,7 +2,7 @@ module PgHero
   module Methods
     module Connections
       def total_connections
-        select_all("SELECT COUNT(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid()").first["count"].to_i
+        select_all("SELECT COUNT(*) FROM pg_stat_activity WHERE procpid <> pg_backend_pid()").first["count"].to_i
       end
 
       def connection_sources(options = {})
@@ -17,7 +17,7 @@ module PgHero
             FROM
               pg_stat_activity
             WHERE
-              pid <> pg_backend_pid()
+              procpid <> pg_backend_pid()
             GROUP BY
               1, 2, 3, 4
             ORDER BY
@@ -33,7 +33,7 @@ module PgHero
             FROM
               pg_stat_activity
             WHERE
-              pid <> pg_backend_pid()
+              procpid <> pg_backend_pid()
             GROUP BY
               1, 2, 3
             ORDER BY
@@ -50,7 +50,7 @@ module PgHero
             FROM
               pg_stat_activity
             WHERE
-              pid <> pg_backend_pid()
+              procpid <> pg_backend_pid()
             GROUP BY
               application_name,
               ip

@@ -26,16 +26,12 @@ module PgHero
         query_stats
       end
 
-      def query_stats_available?
-        select_all("SELECT COUNT(*) AS count FROM pg_available_extensions WHERE name = 'pg_stat_statements'").first["count"].to_i > 0
-      end
-
       def query_stats_enabled?
         query_stats_extension_enabled? && query_stats_readable?
       end
 
       def query_stats_extension_enabled?
-        select_all("SELECT COUNT(*) AS count FROM pg_extension WHERE extname = 'pg_stat_statements'").first["count"].to_i > 0
+        select_all("SELECT COUNT(*) AS count FROM (select viewname from pg_views where viewname = 'pg_stat_statements') AS pg_stats_check").first["count"].to_i > 0
       end
 
       def query_stats_readable?
@@ -43,15 +39,6 @@ module PgHero
         true
       rescue ActiveRecord::StatementInvalid
         false
-      end
-
-      def enable_query_stats
-        execute("CREATE EXTENSION pg_stat_statements")
-      end
-
-      def disable_query_stats
-        execute("DROP EXTENSION IF EXISTS pg_stat_statements")
-        true
       end
 
       def reset_query_stats

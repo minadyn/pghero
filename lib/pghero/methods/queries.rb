@@ -5,20 +5,19 @@ module PgHero
         min_duration = options[:min_duration]
         select_all <<-SQL
           SELECT
-            pid,
-            state,
+            procpid,
             application_name AS source,
             age(NOW(), COALESCE(query_start, xact_start)) AS duration,
             #{server_version_num >= 90600 ? "(wait_event IS NOT NULL) AS waiting" : "waiting"},
-            query,
+            current_query,
             COALESCE(query_start, xact_start) AS started_at,
             usename AS user
           FROM
             pg_stat_activity
           WHERE
-            query <> '<insufficient privilege>'
-            AND state <> 'idle'
-            AND pid <> pg_backend_pid()
+            current_query <> '<insufficient privilege>'
+            AND current_query <> '<IDLE>'
+            AND procpid <> pg_backend_pid()
             AND datname = current_database()
             #{min_duration ? "AND NOW() - COALESCE(query_start, xact_start) > interval '#{min_duration.to_i} seconds'" : nil}
           ORDER BY
@@ -37,21 +36,21 @@ module PgHero
 
       def locks
         select_all <<-SQL
-          SELECT DISTINCT ON (pid)
-            pg_stat_activity.pid,
-            pg_stat_activity.query,
+          SELECT DISTINCT ON (procpid)
+            pg_stat_activity.procpid,
+            pg_stat_activity.current_query,
             age(now(), pg_stat_activity.query_start) AS age
           FROM
             pg_stat_activity
           INNER JOIN
-            pg_locks ON pg_locks.pid = pg_stat_activity.pid
+            pg_locks ON pg_locks.pid = pg_stat_activity.procpid
           WHERE
-            pg_stat_activity.query <> '<insufficient privilege>'
+            pg_stat_activity.current_query <> '<insufficient privilege>'
             AND pg_locks.mode = 'ExclusiveLock'
-            AND pg_stat_activity.pid <> pg_backend_pid()
+            AND pg_stat_activity.procpid <> pg_backend_pid()
             AND pg_stat_activity.datname = current_database()
           ORDER BY
-            pid,
+            procpid,
             query_start
         SQL
       end
@@ -62,21 +61,20 @@ module PgHero
           SELECT
             bl.pid AS blocked_pid,
             a.usename AS blocked_user,
-            ka.query AS current_or_recent_query_in_blocking_process,
-            ka.state AS state_of_blocking_process,
+            ka.current_query AS current_or_recent_query_in_blocking_process,
             age(now(), ka.query_start) AS blocking_duration,
             kl.pid AS blocking_pid,
             ka.usename AS blocking_user,
-            a.query AS blocked_query,
+            a.current_query AS blocked_query,
             age(now(), a.query_start) AS blocked_duration
           FROM
             pg_catalog.pg_locks bl
           JOIN
-            pg_catalog.pg_stat_activity a ON a.pid = bl.pid
+            pg_catalog.pg_stat_activity a ON a.procpid = bl.pid
           JOIN
             pg_catalog.pg_locks kl ON kl.transactionid = bl.transactionid AND kl.pid != bl.pid
           JOIN
-            pg_catalog.pg_stat_activity ka ON ka.pid = kl.pid
+            pg_catalog.pg_stat_activity ka ON ka.procpid = kl.pid
           WHERE
             NOT bl.GRANTED
           ORDER BY

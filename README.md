@@ -2,6 +2,8 @@
 
 A performance dashboard for Postgres
 
+Fork of [ankane/pghero](https://github.com/ankane/pghero) made to work with PostgreSQL 9.0
+
 [See it in action](https://pghero.herokuapp.com/)
 
 [![Screenshot](https://pghero.herokuapp.com/assets/screenshot-a54dead9c9bfc4c1176b184c5bd97ca1.png)](https://pghero.herokuapp.com/)
