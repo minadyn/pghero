@@ -2,13 +2,14 @@ module PgHero
   module Methods
     module Sequences
       def sequences
+        # information_schema.sequences.maximum_value isn't implemented in 9.0, but a sequence is always a bigint
         sequences = select_all <<-SQL
           SELECT
             sequence_schema AS schema,
             table_name AS table,
             column_name AS column,
             c.data_type AS column_type,
-            CASE WHEN c.data_type = 'integer' THEN 2147483647::bigint ELSE maximum_value::bigint END AS max_value,
+            CASE WHEN c.data_type = 'integer' THEN 2147483647::bigint ELSE 9223372036854775807::bigint END AS max_value,
             sequence_name AS sequence
           FROM
             information_schema.columns c
